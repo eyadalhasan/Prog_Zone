@@ -110,3 +110,44 @@ class PasswordResetRequestAPI(APIView):
             return Response({"detail": "Password reset email has been sent."}, status=status.HTTP_200_OK)
         return Response({"error": "Invalid email"}, status=status.HTTP_400_BAD_REQUEST)
 
+from django.contrib.auth.models import User
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializer import UserSerializer
+from rest_framework.permissions import IsAuthenticated
+
+class UserRetrieveUpdateAPIView(APIView):
+    # Apply the authentication and permissions as needed
+    authentication_classes=[TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        # You can retrieve the user from the session or use a URL parameter
+        user = request.user
+        # If you want to retrieve a user by a parameter, like their id, you would use:
+        # user_id = kwargs.get('pk') or kwargs.get('user_id')
+        # user = User.objects.get(pk=user_id)
+        
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        # For partial updates, use 'partial=True'
+    
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+
+
+
+
+
