@@ -36,8 +36,11 @@ class IsStudentOrReadOnly(permissions.BasePermission):
         # so we'll always allow GET, HEAD, or OPTIONS requests.
         if request.method in permissions.SAFE_METHODS:
             try:
-                request.user.student
-                return True
+               
+                x=request.user.is_student()
+                
+                return x
+            
             except ObjectDoesNotExist:
                 return False
         # Write permissions are not allowed for students
