@@ -4,11 +4,13 @@ from Employee.models import Employee
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from Category.models import Category
+from BindingCourse.models import BindingCourse
 
 def video_upload_location(instance, filename):
     return f'Course/course-videos/{instance.title}/{filename}'
-
 class Course(models.Model):
+    binding_course = models.OneToOneField(BindingCourse, on_delete=models.CASCADE, related_name='course',null=True,blank=True)
+
     title = models.CharField(max_length=200)
     description = models.TextField()
     created_by = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, related_name='created_courses', editable=False)
