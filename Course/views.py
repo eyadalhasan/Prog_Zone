@@ -11,26 +11,24 @@ from Permissions.permission import IsSuperUser
 from Permissions.permission import IsRelatedEmployeeOrReadOnly
 from Employee.models import Employee
 from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework import status
 class CourseViewSet(viewsets.ModelViewSet):
-    permission_classes=()
+    permission_classes=[]
     authentication_classes=[TokenAuthentication]
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    
-
     
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-    
- 
         if self.action in ['update', 'partial_update', 'destroy']:
             
             permission_classes = [IsAuthenticated, IsEmployee |IsSuperUser,IsRelatedEmployeeOrReadOnly]
         elif self.action in ['create']:
         # Only allow certain users (e.g., employees) to create courses
-            permission_classes = [IsAuthenticated, IsEmployee]
+            permission_classes = [IsAuthenticated, IsEmployee,IsSuperUser]
     
         elif self.action  in ['retrive',"list"]:
             permission_classes = [IsAuthenticated, IsStudentOrReadOnly | IsEmployee|IsSuperUser]
@@ -43,13 +41,24 @@ class CourseViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user=self.request.user
         print(user.id)
+        
         obj=Employee.objects.get(user__id=user.id)
         serializer.save(created_by=obj)
-
-    
-
         
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    @action(detail=True, methods=['get'])
+    def by_category(self, request,pk=None):
+        """
+        Retrieve courses by category.
+        """
+        print
+        category_id =pk
+        if category_id is None:
+            return Response({"error": "Please provide a category_id parameter."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        courses = Course.objects.filter(category_id=category_id)
+        serializer = self.get_serializer(courses, many=True)
         return Response(serializer.data)

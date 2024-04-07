@@ -8,6 +8,7 @@ from Permissions.permission import IsEmployee
 from Permissions.permission import IsStudentOrReadOnly
 from Permissions.permission import IsSuperUser
 from rest_framework.response import Response
+from Permissions.permission import IsRelatedEmployeeOrReadOnly
 class BookViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication,]
@@ -15,9 +16,9 @@ class BookViewSet(viewsets.ModelViewSet):
     serializer_class=BookSerializer
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
-            permission_classes = [IsAuthenticated, IsEmployee |IsSuperUser]
+            permission_classes = [IsAuthenticated, IsSuperUser|IsRelatedEmployeeOrReadOnly]
         elif self.action in ['create']:
-            permission_classes = [IsAuthenticated, IsEmployee]
+            permission_classes = [IsAuthenticated, IsEmployee|IsSuperUser]
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]

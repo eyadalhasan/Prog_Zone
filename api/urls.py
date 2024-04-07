@@ -24,6 +24,8 @@ router = DefaultRouter()
 from ProgramingLanguage.views import ProgramingLanguageViewSet
 from Employee.views import EmployeeRegestrationView
 from Enrollments.views import EnrollmentsViewset
+from Category.views import CategoryViewSet
+from BindingCourse.views import BindingCourseViewSet
 router.register(
     r"programing-language", ProgramingLanguageViewSet, basename="ProgramingLanguage"
 )
@@ -34,6 +36,10 @@ router.register(r'book',BookViewSet,basename='book')
 router.register(r'course',CourseViewSet,basename='course')
 router.register(r'summary',SummaryViewSet,basename='summary')
 router.register(r'enrollment',EnrollmentsViewset,basename='enrollment')
+
+router.register(r'category',CategoryViewSet,basename='Category')
+router.register(r'bindingcourses', BindingCourseViewSet,basename='BindingCourse')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

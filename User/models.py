@@ -9,6 +9,8 @@ from django.db import models
 class CustomUser(AbstractUser):
     birthday = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)  # Remove blank=True
+    image = models.ImageField(upload_to='user_images/', null=True, blank=True,default='defualt.jpg/')
+    gender=models.CharField(max_length=10,default='male',blank=True,null=True)
     groups = models.ManyToManyField(
         'auth.Group',
         verbose_name='groups',
@@ -21,16 +23,22 @@ class CustomUser(AbstractUser):
     country=models.CharField(max_length=30,blank=True,null=True)
     city=models.CharField(max_length=30,blank=True,null=True)
     phone_number=models.IntegerField(blank=True,null=True)
-
-    # Provide a unique related_name for the user_permissions field
     user_permissions = models.ManyToManyField(
         'auth.Permission',
         verbose_name='user permissions',
         blank=True,
         help_text='Specific permissions for this user.',
-        related_name='custom_users_permissions',  # Unique related_name
+        related_name='custom_users_permissions',
         related_query_name='user',
     )
+    def is_student(self):
+        return hasattr(self, 'student')
+    
+    
+        
+
+    def is_employee(self):
+        return hasattr(self, 'employee')
     def save(self, *args, **kwargs):
         if not self.pk:  # Check if the instance is being created
             # Perform your actions for newly created instances here

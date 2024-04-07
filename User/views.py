@@ -20,6 +20,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import SetPasswordForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.conf import settings
+
 class UserRegistrationView(APIView):
     permission_classes = ()
     authentication_classes = ()
@@ -44,6 +53,8 @@ class LoginView(APIView):
         # Get the username and password from the request
         username = request.data.get("username")
         password = request.data.get("password")
+        print(username)
+        print(password)
 
         # Authenticate the user
         user = authenticate(request, username=username, password=password)
@@ -53,7 +64,16 @@ class LoginView(APIView):
             if user.is_active:
                 login(request, user)
                 token, _ = Token.objects.get_or_create(user=user)
-                return Response({"token": str(token)}, status=status.HTTP_200_OK)
+                user_type=""
+                if user.is_student():
+                    user_type="student"
+                elif user.is_employee():
+                    user_type="employee"
+                elif user.is_superuser:
+                    user_type="admin"
+                print(user_type)   
+
+                return Response({"token": str(token),"role":user_type}, status=status.HTTP_200_OK)
             else:
                 return Response(
                     {"message": "Account is not active"},
@@ -109,6 +129,78 @@ class PasswordResetRequestAPI(APIView):
             form.save(**opts)
             return Response({"detail": "Password reset email has been sent."}, status=status.HTTP_200_OK)
         return Response({"error": "Invalid email"}, status=status.HTTP_400_BAD_REQUEST)
+    
+from django.conf import settings
+from django.contrib.auth.forms import PasswordResetForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from django.conf import settings
+from django.contrib.auth.forms import PasswordResetForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+class PasswordResetRequestMobileAPI(APIView):
+    permission_classes = ()
+    authentication_classes = ()
+    
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        if not email:
+            return Response({"error": "Email address is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        form = PasswordResetForm(data={'email': email})
+        if form.is_valid():
+            opts = {
+                'use_https': request.is_secure(),
+                'from_email': getattr(settings, 'DEFAULT_FROM_EMAIL'),
+                'email_template_name': 'user-confirm-mobile.html',
+                'extra_email_context': {
+                    'protocol': 'yourapp',
+                    'domain': 'reset-password'
+                },
+                'request': request,
+            }
+            form.save(**opts)
+            return Response({"detail": "Password reset email has been sent."}, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Invalid email"}, status=status.HTTP_400_BAD_REQUEST)
+# urls.py
+
+
+# views.py
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.models import User
+from django.contrib.auth import login
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+
+def reset_password_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            form = SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                # Optionally log the user in after resetting the password
+                login(request, user)
+                # Redirect to password reset complete page
+                return redirect('password_reset_complete')
+        else:
+            form = SetPasswordForm(user)
+        return render(request, 'reset_password_form.html', {'form': form})
+
+    else:
+        # Invalid link
+        return render(request, 'reset_password_link_invalid.html')
 
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
@@ -128,7 +220,7 @@ class UserRetrieveUpdateAPIView(APIView):
         # If you want to retrieve a user by a parameter, like their id, you would use:
         # user_id = kwargs.get('pk') or kwargs.get('user_id')
         # user = User.objects.get(pk=user_id)
-        
+    
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -136,18 +228,55 @@ class UserRetrieveUpdateAPIView(APIView):
     def patch(self, request, *args, **kwargs):
         user = request.user
         # For partial updates, use 'partial=True'
+
     
         serializer = UserSerializer(user, data=request.data, partial=True)
+        print(serializer)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+# In your Django views.py
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.forms import SetPasswordForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
+User = get_user_model()
 
+class PasswordChangeAPI(APIView):
+    permission_classes = ()
+    authentication_classes = ()
 
+    def post(self, request, uid, token, *args, **kwargs):
+     
+        new_password1 = request.data.get('new_password1')
+        new_password2 = request.data.get('new_password2')
+        print(request.data)
+       
 
+        try:
+            uid = urlsafe_base64_decode(uid).decode()
+            
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        
+        if user is not None and default_token_generator.check_token(user, token):
+            
+            form = SetPasswordForm(user, request.data)
 
-
-
+            if form.is_valid():
+                form.save()
+                
+                return Response({"success": "Password has been reset with the new password."}, status=status.HTTP_200_OK)
+            else:
+                
+                return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "The reset link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
