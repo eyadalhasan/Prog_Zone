@@ -13,7 +13,7 @@ class Course(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-    created_by = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, related_name='created_courses', editable=False)
+    created_by = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, related_name='created_courses')
     price = models.DecimalField(max_digits=6, decimal_places=2, default=50.00, validators=[MinValueValidator(Decimal('0.00'))])
     imageURL = models.ImageField(upload_to='Course/course-images', null=True, blank=True)
     videoFile = models.FileField(upload_to=video_upload_location, null=True, blank=True)

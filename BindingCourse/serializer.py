@@ -6,3 +6,4 @@ class BindingCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = BindingCourse
         fields = '__all__'
+        depth=1

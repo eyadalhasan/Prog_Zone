@@ -25,6 +25,20 @@ class IsEmployee(permissions.BasePermission):
         except ObjectDoesNotExist:
             return False
 
+class IsStudent(permissions.BasePermission):
+    """
+    Custom permission to only allow employees of the system to create, update or delete.
+    """
+
+    def has_permission(self, request, view):
+        
+        # Check if the user is an employee
+        try:
+            request.user.is_student()
+            return True
+        except ObjectDoesNotExist:
+            return False
+
 class IsStudentOrReadOnly(permissions.BasePermission):
     """
     Custom permission to only allow students to read.

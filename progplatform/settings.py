@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     "Book",
     "Enrollments",
     "BindingBook",
+    "Comments",
+    "Certificate",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -71,6 +73,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+poppler_bin = r'C:\Users\eyad al hasan\Downloads\Release-24.02.0-0\poppler-24.02.0\Library\bin'  # Update this path as necessary
+os.environ["PATH"] += os.pathsep + poppler_bin
 
 ROOT_URLCONF = 'progplatform.urls'
 CORS_ALLOWED_ORIGINS = [

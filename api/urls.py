@@ -32,13 +32,17 @@ router.register(
 from Student.views import StudentRegisteration
 from Book.views import BookViewSet
 from Course.views import CourseViewSet
+from Comments.views import CommentViewSet
+from Certificate.views import CertificateAPI
 router.register(r'book',BookViewSet,basename='book')
 router.register(r'course',CourseViewSet,basename='course')
 router.register(r'summary',SummaryViewSet,basename='summary')
 router.register(r'enrollment',EnrollmentsViewset,basename='enrollment')
 
 router.register(r'category',CategoryViewSet,basename='Category')
+router.register(r'comment',CommentViewSet,basename='Comment')
 router.register(r'bindingcourses', BindingCourseViewSet,basename='BindingCourse')
+
 
 
 urlpatterns = [
@@ -47,6 +51,8 @@ urlpatterns = [
     path('employee-register/',EmployeeRegestrationView.as_view(),name= 'employee-register'),
     path('student-register/',StudentRegisteration.as_view(),name= 'student-register'),
     path('code_executor/', include('code_executor.urls')),  # Ensure this line is added
+    path('certificate/', CertificateAPI.as_view(), name='certificate_api'),
+
     path("", include(router.urls)),
 
     

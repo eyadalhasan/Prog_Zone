@@ -19,6 +19,8 @@ from django.contrib.auth.models import User
 class BindingCourseViewSet(viewsets.ModelViewSet):
     queryset = BindingCourse.objects.all()
     serializer_class = BindingCourseSerializer
+    permission_classes=[IsAuthenticated]
+    authentication_classes=[TokenAuthentication]
     
     def get_permissions(self):
         """

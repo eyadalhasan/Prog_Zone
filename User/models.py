@@ -22,7 +22,7 @@ class CustomUser(AbstractUser):
     street=models.CharField(max_length=30,blank=True,null=True)
     country=models.CharField(max_length=30,blank=True,null=True)
     city=models.CharField(max_length=30,blank=True,null=True)
-    phone_number=models.IntegerField(blank=True,null=True)
+    phone_number=models.CharField(max_length=30,blank=True,null=True)
     user_permissions = models.ManyToManyField(
         'auth.Permission',
         verbose_name='user permissions',
