@@ -15,6 +15,10 @@ class StudentRegisteration(APIView):
         serializer=StudentSerializer(data=data)
         if  serializer.is_valid():
             serializer.save()
+        if not serializer.is_valid():
+            print(serializer.errors)  # Output errors to console for debugging
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

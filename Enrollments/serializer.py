@@ -4,4 +4,5 @@ class EnrollmentsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Enrollments
         fields="__all__"
+        depth=4
         

@@ -14,7 +14,7 @@ from rest_framework.decorators import action
 from rest_framework import status
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = []
     permission_classes = []
 
     queryset = Category.objects.all()
@@ -29,7 +29,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             permission_classes = [IsAuthenticated, IsSuperUser]
         elif self.action in ['retrieve', 'list']:
-            permission_classes = [IsAuthenticated,IsEmployee|IsStudentOrReadOnly|IsSuperUser]
+            permission_classes = []
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]

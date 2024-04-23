@@ -54,7 +54,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         Retrieve courses by category.
         """
-        print
+        print(pk)
         category_id =pk
         if category_id is None:
             return Response({"error": "Please provide a category_id parameter."}, status=status.HTTP_400_BAD_REQUEST)
@@ -62,3 +62,34 @@ class CourseViewSet(viewsets.ModelViewSet):
         courses = Course.objects.filter(category_id=category_id)
         serializer = self.get_serializer(courses, many=True)
         return Response(serializer.data)
+    @action(detail=True, methods=['get'])
+    def search_filter(self, request,pk=None):
+        """
+        Retrieve courses by category.
+        """
+        print(pk)
+        category_id =pk
+        if category_id is None:
+            return Response({"error": "Please provide a category_id parameter."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        courses = Course.objects.filter(category_id=category_id)        
+        """
+        Apply search filters to the queryset based on query parameters.
+
+        """
+        search_by = request.query_params.get('searchBy', None)
+        search_query = request.query_params.get('searchQuery', None)
+        
+        if search_by and search_query:
+            if search_by == 'title':
+                queryset = courses.filter(title__icontains=search_query)
+            if search_by == 'description':
+                queryset = courses.filter(description__icontains=search_query)
+            if search_by == 'created_by':
+                queryset = Course.objects.filter(
+            created_by__user__username__icontains=search_query
+            )
+            serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+

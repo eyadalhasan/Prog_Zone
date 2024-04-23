@@ -6,12 +6,15 @@ from User.serializer import UserSerializer  # Make sure this import path is corr
 User = get_user_model()
 
 class EmployeeSerializer(serializers.ModelSerializer):
+
+
     user = UserSerializer()
+   
 
     class Meta:
         model = Employee
         fields = "__all__"  # This now includes the nested user serializer
-
+        depth=1
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user_serializer = UserSerializer(data=user_data)
