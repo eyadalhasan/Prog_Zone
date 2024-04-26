@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "BindingBook",
     "Comments",
     "Certificate",
+    "Video",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator
 from decimal import Decimal
 from Category.models import Category
 from BindingCourse.models import BindingCourse
+from Video.models import Video
 
 def video_upload_location(instance, filename):
     return f'Course/course-videos/{instance.title}/{filename}'
@@ -19,6 +20,11 @@ class Course(models.Model):
     videoFile = models.FileField(upload_to=video_upload_location, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE,null=True,blank=True)
     demo= models.FileField(upload_to=video_upload_location, null=True, blank=True)
+    videos = models.ManyToManyField(Video, related_name='courses', blank=True)
+    
+    
+    
+
 
 
     def __str__(self):
