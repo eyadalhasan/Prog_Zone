@@ -28,10 +28,14 @@ from Enrollments.views import EnrollmentsViewset
 from Category.views import CategoryViewSet
 from BindingCourse.views import BindingCourseViewSet
 from Employee.views import EmployeeDataView
+from Enrollments.views import EnrollmentsView
+from Course.views import StudentCourseRankViewSet
+from BindingMeeting.views import BindingMeetingViewSet
+from Notification.views import NotificationViewSet
+from Meeting.views import MeetingViewSet
 router.register(
     r"programing-language", ProgramingLanguageViewSet, basename="ProgramingLanguage"
 )
-
 
 from Student.views import StudentRegisteration
 from Book.views import BookViewSet
@@ -42,11 +46,15 @@ router.register(r'book',BookViewSet,basename='book')
 router.register(r'course',CourseViewSet,basename='course')
 router.register(r'summary',SummaryViewSet,basename='summary')
 router.register(r'enrollment',EnrollmentsViewset,basename='enrollment')
+# router.register(r'meeting',EnrollmentsViewset,basename='enrollment')
 
 router.register(r'category',CategoryViewSet,basename='Category')
 router.register(r'comment',CommentViewSet,basename='Comment')
 router.register(r'bindingcourses', BindingCourseViewSet,basename='BindingCourse')
-
+router.register(r'studentcourseranks', StudentCourseRankViewSet)
+router.register(r'binding-meeting',BindingMeetingViewSet,basename='bindinmeeting')
+router.register(r'notification',NotificationViewSet,basename='notification')
+router.register(r'meeting',MeetingViewSet,basename='meeting')
 
 
 urlpatterns = [
@@ -54,6 +62,8 @@ urlpatterns = [
     path('', include("User.urls")),
     path('employee-register/',EmployeeRegestrationView.as_view(),name= 'employee-register'),
     path('employee/<int:id>',EmployeeDataView.as_view(),name= 'employee-data'),
+    path('add-enrollment/',EnrollmentsView.as_view(),name= 'enrollment-data'),
+
 
     path('student-register/',StudentRegisteration.as_view(),name= 'student-register'),
     path('code_executor/', include('code_executor.urls')),  # Ensure this line is added

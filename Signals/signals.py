@@ -4,6 +4,11 @@ from BindingCourse.models import BindingCourse
 from Course.models import Course
 from BindingBook.models import BindingBook
 from Book.models import Book
+from Course.models import StudentCourseRank
+from django.db.models import Avg
+from BindingMeeting.models import BindingMeeting
+from Meeting.models import Meeting
+
 
 @receiver(post_save, sender=BindingCourse)
 def create_or_update_course(sender, instance, created=False, **kwargs):
@@ -55,4 +60,36 @@ def create_or_update_book(sender, instance, created=False, **kwargs):
                 link=instance.link,
                 binding_book=instance,
             )
+@receiver(post_save, sender=StudentCourseRank)
+def update_course_rank(sender, instance, created, **kwargs):
+    course = instance.course
+    average_rank = course.student_ranks.aggregate(Avg('rank'))['rank__avg']
+    course.average_rank = average_rank
+    course.save()
+
        
+
+
+
+@receiver(post_save, sender=BindingMeeting)
+def create_or_update_course(sender, instance, created=False, **kwargs):
+    if instance.approved:
+        # Check if a corresponding Course object already exists
+        try:
+            meeting = Meeting.objects.get(binding_meeting=instance)
+            meeting.date_time = instance.date_time
+            meeting.student = instance.student
+            meeting.employee = instance.employee
+            meeting.message = instance.message
+            meeting.save()
+        except Meeting.DoesNotExist:
+            # If it doesn't exist, create a new Course object
+            meeting = Meeting.objects.create(
+                date_time=instance.date_time,
+                student=instance.student,
+                employee=instance.employee,
+                message=instance.message,
+
+                binding_meeting=instance  # assuming Course model has a ForeignKey to BindingCourse
+            )
+            

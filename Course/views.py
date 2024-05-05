@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets
 from .models import Course
 from .serializer import CourseSerializer
@@ -79,17 +79,45 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         search_by = request.query_params.get('searchBy', None)
         search_query = request.query_params.get('searchQuery', None)
+        category_id = request.query_params.get('category', None)
+
         
         if search_by and search_query:
             if search_by == 'title':
-                queryset = courses.filter(title__icontains=search_query)
+                queryset = courses.filter(title__icontains=search_query,category__id=category_id)
             if search_by == 'description':
-                queryset = courses.filter(description__icontains=search_query)
+                queryset = courses.filter(description__icontains=search_query,category__id=category_id)
             if search_by == 'created_by':
                 queryset = Course.objects.filter(
-            created_by__user__username__icontains=search_query
+            created_by__user__username__icontains=search_query,category_id=category_id
             )
             serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from .models import StudentCourseRank
+from .serializer import StudentCourseRankSerializer
+from Student.models import Student
+
+class StudentCourseRankViewSet(viewsets.ModelViewSet):
+    queryset = StudentCourseRank.objects.all()
+    serializer_class = StudentCourseRankSerializer
+    permission_classes = [IsAuthenticated]  # Ensure only authenticated users can use this viewset
+    authentication_classes=[TokenAuthentication]
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            student = get_object_or_404(Student, user=request.user)
+            serializer.save(student=student)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def list(self, request, *args, **kwargs):
+        # Standard implementation of list action, which might include filtering logic
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
 
