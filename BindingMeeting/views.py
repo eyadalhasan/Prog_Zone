@@ -54,13 +54,13 @@ class BindingMeetingViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     queryset = BindingMeeting.objects.all()
     serializer_class = MeetingSerializer
-    http_method_names=[
-        'get',
-        'post',
-        'patch',
-        'delete'
+    # http_method_names=[
+    #     'get',
+    #     'post',
+    #     'patch',
+    #     'delete'
     
-    ]
+    # ]
 
     def create(self, request, *args, **kwargs):
         # Since you require authentication, it's assumed 'request.user' is not Anonymous

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "Meeting",
     "BindingMeeting",
     "Notification",
+    "Quiz",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

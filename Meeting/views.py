@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from Employee.models import Employee
+from Student.models import Student
 
 class MeetingViewSet(viewsets.ModelViewSet):
     permission_classes=[]
@@ -42,8 +43,15 @@ class MeetingViewSet(viewsets.ModelViewSet):
         """
         Retrieve all meetings for the currently authenticated user assumed to be an employee.
         """
-
         meetings = self.queryset.filter(employee=pk)
         serializer = self.get_serializer(meetings, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    @action(detail=False,methods=['get'], url_path='by-user')
+    def by_user(self,request):
+        """
+        Retrieve all meetings for the currently authenticated user assumed to be an employee.
+        """
+        student =Student.objects.get(user=request.user)
+        meetings = self.queryset.filter(student=student)
+        serializer = self.get_serializer(meetings, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

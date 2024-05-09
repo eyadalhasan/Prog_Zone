@@ -8,6 +8,7 @@ from Course.models import StudentCourseRank
 from django.db.models import Avg
 from BindingMeeting.models import BindingMeeting
 from Meeting.models import Meeting
+from django.db.models.signals import post_delete
 
 
 @receiver(post_save, sender=BindingCourse)
@@ -72,8 +73,10 @@ def update_course_rank(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=BindingMeeting)
-def create_or_update_course(sender, instance, created=False, **kwargs):
+def create_or_update_meeting(sender, instance, created=False, **kwargs):
+
     if instance.approved:
+        print('yes approved')
         # Check if a corresponding Course object already exists
         try:
             meeting = Meeting.objects.get(binding_meeting=instance)
@@ -81,15 +84,67 @@ def create_or_update_course(sender, instance, created=False, **kwargs):
             meeting.student = instance.student
             meeting.employee = instance.employee
             meeting.message = instance.message
+            meeting.accepted=True
             meeting.save()
+            print(instance.approved)
         except Meeting.DoesNotExist:
-            # If it doesn't exist, create a new Course object
+            print('new')
+
             meeting = Meeting.objects.create(
                 date_time=instance.date_time,
                 student=instance.student,
                 employee=instance.employee,
                 message=instance.message,
-
+                accepted=True,
                 binding_meeting=instance  # assuming Course model has a ForeignKey to BindingCourse
             )
+            meeting.save()
+
+
+@receiver(post_delete, sender=BindingMeeting)
+def create_meeting_on_deletion(sender, instance, **kwargs):
+    # Since the original BindingMeeting is deleted, you cannot link the new Meeting to it.
+    # You can still create a new Meeting possibly related to another BindingMeeting or without any direct link.
+    
+    # Create a new Meeting object with default or specified attributes
+    if instance.approved==False:
+        new_meeting = Meeting.objects.create(
+            date_time=instance.date_time if hasattr(instance, 'date_time') else None,
+            student=instance.student if hasattr(instance, 'student') else None,
+            employee=instance.employee if hasattr(instance, 'employee') else None,
+            message=instance.message,
+            accepted=False,
             
+            # Do not link binding_meeting as the original is deleted
+        )
+        new_meeting.save()
+    
+    # Optionally, if your model allows nullable or default BindingMeeting, you might set it here
+    # new_meeting.binding_meeting = some_default_binding_meeting
+    # new_meeting.save()
+
+
+# @receiver(post_delete, sender=BindingMeeting)
+# def create_or_update_new_meeting(sender, instance, created=False, **kwargs):
+#     if instance.approved==False and created==False:
+#         print('false')
+
+#         try:
+#             meeting = Meeting.objects.get(binding_meeting=instance)
+#             meeting.date_time = instance.date_time
+#             meeting.student = instance.student
+#             meeting.employee = instance.employee
+#             meeting.message = instance.message
+#             meeting.accepted=False
+#             meeting.save()
+#         except Meeting.DoesNotExist:
+#             # If it doesn't exist, create a new Course object
+#             meeting = Meeting.objects.create(
+#                 date_time=instance.date_time,
+#                 student=instance.student,
+#                 employee=instance.employee,
+#                 message=instance.message,
+#                 accepted=False,
+#                 binding_meeting=instance  # assuming Course model has a ForeignKey to BindingCourse
+#             )
+#             meeting.save()

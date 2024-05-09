@@ -49,6 +49,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+    @action (detail=False,methods=['get'])
+    def employeeCourses(self,request,*args,**kargs):
+        employee=Employee.objects.get(user=request.user)
+        courses=Course.objects.filter(created_by=employee);
+        serializer=CourseSerializer(courses,many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['get'])
     def by_category(self, request,pk=None):
         """

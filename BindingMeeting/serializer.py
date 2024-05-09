@@ -11,6 +11,6 @@ class MeetingEmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = BindingMeeting
         fields="__all__"
-        depth=1
+        depth=2
         
 

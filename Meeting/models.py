@@ -10,6 +10,14 @@ class Meeting(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_meetings')
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='employee_meetings')
     message = models.TextField()
+    accepted=models.BooleanField(default=False)
+    is_readed=models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now_add=True,blank=True,null=True)  # Automatically set the field to now when the object is first created.
+   
+    
+    class Meta:
+        ordering = ['-created_on']  # Global default ordering
+
 
     def __str__(self):
         return f"Meeting on {self.date_time} with {self.student} and {self.employee}"

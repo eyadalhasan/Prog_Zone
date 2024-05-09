@@ -42,6 +42,7 @@ from Book.views import BookViewSet
 from Course.views import CourseViewSet
 from Comments.views import CommentViewSet
 from Certificate.views import CertificateAPI
+from Quiz.views import ChoiceViewSet,QuestionViewSet,QuizViewSet
 router.register(r'book',BookViewSet,basename='book')
 router.register(r'course',CourseViewSet,basename='course')
 router.register(r'summary',SummaryViewSet,basename='summary')
@@ -55,7 +56,9 @@ router.register(r'studentcourseranks', StudentCourseRankViewSet)
 router.register(r'binding-meeting',BindingMeetingViewSet,basename='bindinmeeting')
 router.register(r'notification',NotificationViewSet,basename='notification')
 router.register(r'meeting',MeetingViewSet,basename='meeting')
-
+router.register(r'quizzes', QuizViewSet,basename="quizzes")
+router.register(r'questions', QuestionViewSet,basename="questions")
+router.register(r'choices', ChoiceViewSet,basename="choices")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -63,7 +66,31 @@ urlpatterns = [
     path('employee-register/',EmployeeRegestrationView.as_view(),name= 'employee-register'),
     path('employee/<int:id>',EmployeeDataView.as_view(),name= 'employee-data'),
     path('add-enrollment/',EnrollmentsView.as_view(),name= 'enrollment-data'),
+    path('course/<int:course_id>/quizzes/', QuizViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }), name='course-quizzes')
+,
+    path('quizzes/<int:quiz_id>/questions/', QuestionViewSet.as_view({
+        'get': 'list',  # To retrieve all questions for a quiz
+        'post': 'create'  # To create a new question for a quiz
+    }), name='quiz-questions'),
+    path('quizzes/<int:quiz_id>/questions/<int:pk>/', QuestionViewSet.as_view({
+        'get': 'retrieve',  # To retrieve a specific question
+        'put': 'update',    # To update a specific question
+        'delete': 'destroy' # To delete a specific question
+    }), name='quiz-question-detail'),
 
+
+    path('questions/<int:question_id>/choices/', ChoiceViewSet.as_view({
+        'get': 'list',  # To retrieve all questions for a quiz
+        'post': 'create'  # To create a new question for a quiz
+    }), name='questions-choices'),
+    path('questions/<int:question_id>/choices/<int:pk>/', ChoiceViewSet.as_view({
+        'get': 'retrieve',  # To retrieve a specific question
+        'put': 'update',    # To update a specific question
+        'delete': 'destroy' # To delete a specific question
+    }), name='questions-choices-detail'),
 
     path('student-register/',StudentRegisteration.as_view(),name= 'student-register'),
     path('code_executor/', include('code_executor.urls')),  # Ensure this line is added
