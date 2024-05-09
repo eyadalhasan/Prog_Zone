@@ -23,6 +23,7 @@ class EmployeeRegestrationView(APIView):
         objs=Employee.objects.all()
         serilize=EmployeeSerializer(objs, many=True)
         return Response(serilize.data,status=status.HTTP_200_OK)
+    
 class EmployeeDataView(APIView):
     permission_classes = ()
     authentication_classes = ()
@@ -40,6 +41,7 @@ class EmployeeDataView(APIView):
         obj = Employee.objects.get(id=id)
         serialize = EmployeeSerializer(obj)
         return Response(serialize.data, status=status.HTTP_200_OK)
+
 
 
 

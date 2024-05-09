@@ -208,6 +208,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializer import UserSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 
 class UserRetrieveUpdateAPIView(APIView):
     # Apply the authentication and permissions as needed
@@ -236,6 +237,21 @@ class UserRetrieveUpdateAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        user_id = kwargs.get('pk', None)
+        if not user_id:
+            # Assuming you do not want to allow deleting the current authenticated user
+            return Response({"error": "Cannot delete current user without specific user ID."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = get_object_or_404(User, pk=user_id)
+        # Additional checks can be added to prevent unauthorized deletion
+        user.delete()
+        return Response({"message": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)        
+
+        
+
+
     
 
 # In your Django views.py

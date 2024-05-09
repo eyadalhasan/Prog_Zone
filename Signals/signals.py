@@ -11,6 +11,39 @@ from Meeting.models import Meeting
 from django.db.models.signals import post_delete
 
 
+# @receiver(post_save, sender=BindingCourse)
+# def create_or_update_course(sender, instance, created=False, **kwargs):
+#     if instance.approved:
+#         # Check if a corresponding Course object already exists
+#         try:
+#             course = Course.objects.get(binding_course=instance)
+#             course.title = instance.title
+#             course.description = instance.description
+#             course.created_by = instance.created_by
+#             course.price = instance.price
+#             course.imageURL = instance.imageURL
+#             course.videoFile = instance.videoFile
+#             course.category = instance.category
+#             course.demo = instance.demo
+#             course.videos.set(instance.videos)
+#             course.save()
+#         except Course.DoesNotExist:
+#             # If it doesn't exist, create a new Course object
+#             course = Course.objects.create(
+#                 title=instance.title,
+#                 description=instance.description,
+#                 created_by=instance.created_by,
+#                 price=instance.price,
+#                 imageURL=instance.imageURL,
+#                 videoFile=instance.videoFile,
+#                 category=instance.category,
+#                 demo=instance.demo,
+#                 videos=instance.videos,
+#                 binding_course=instance  # assuming Course model has a ForeignKey to BindingCourse
+#             )
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 @receiver(post_save, sender=BindingCourse)
 def create_or_update_course(sender, instance, created=False, **kwargs):
     if instance.approved:
@@ -25,6 +58,7 @@ def create_or_update_course(sender, instance, created=False, **kwargs):
             course.videoFile = instance.videoFile
             course.category = instance.category
             course.demo = instance.demo
+            course.videos.set(instance.videos.all())  # Use .all() to get all related videos
             course.save()
         except Course.DoesNotExist:
             # If it doesn't exist, create a new Course object
@@ -39,6 +73,8 @@ def create_or_update_course(sender, instance, created=False, **kwargs):
                 demo=instance.demo,
                 binding_course=instance  # assuming Course model has a ForeignKey to BindingCourse
             )
+            course.videos.set(instance.videos.all())  # Set the many-to-many relationship
+
 @receiver(post_save, sender=BindingBook)
 def create_or_update_book(sender, instance, created=False, **kwargs):
     if instance.approved:

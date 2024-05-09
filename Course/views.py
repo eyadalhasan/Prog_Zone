@@ -19,22 +19,22 @@ class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        if self.action in ['update', 'partial_update', 'destroy']:
+    # def get_permissions(self):
+    #     """
+    #     Instantiates and returns the list of permissions that this view requires.
+    #     """
+    #     if self.action in ['update', 'partial_update', 'destroy']:
             
-            permission_classes = [IsAuthenticated, IsEmployee |IsSuperUser,IsRelatedEmployeeOrReadOnly]
-        elif self.action in ['create']:
-        # Only allow certain users (e.g., employees) to create courses
-            permission_classes = [IsAuthenticated, IsEmployee,IsSuperUser]
+    #         permission_classes = [IsAuthenticated, IsEmployee &IsRelatedEmployeeOrReadOnly |IsSuperUser]
+    #     elif self.action in ['create']:
+    #     # Only allow certain users (e.g., employees) to create courses
+    #         permission_classes = [IsAuthenticated, IsEmployee,IsSuperUser]
     
-        elif self.action  in ['retrive',"list"]:
-            permission_classes = [IsAuthenticated, IsStudentOrReadOnly | IsEmployee|IsSuperUser]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
+    #     elif self.action  in ['retrive',"list"]:
+    #         permission_classes = [IsAuthenticated, IsStudentOrReadOnly | IsEmployee|IsSuperUser]
+    #     else:
+    #         permission_classes = [IsAuthenticated]
+    #     return [permission() for permission in permission_classes]
     
     
 
@@ -55,6 +55,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         courses=Course.objects.filter(created_by=employee);
         serializer=CourseSerializer(courses,many=True)
         return Response(serializer.data)
+    @action (detail=True,methods=['get'])
+    def get_employee_courses(self, request,pk=None):
+        employee=Employee.objects.get(id=pk)
+        courses=Course.objects.filter(created_by=employee);
+        serializer=CourseSerializer(courses,many=True)
+        return Response(serializer.data)
+
 
     @action(detail=True, methods=['get'])
     def by_category(self, request,pk=None):
@@ -121,6 +128,7 @@ class StudentCourseRankViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def list(self, request, *args, **kwargs):
         # Standard implementation of list action, which might include filtering logic
