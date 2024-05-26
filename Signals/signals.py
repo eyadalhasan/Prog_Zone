@@ -9,7 +9,7 @@ from django.db.models import Avg
 from BindingMeeting.models import BindingMeeting
 from Meeting.models import Meeting
 from django.db.models.signals import post_delete
-
+from Notification.models import Notification
 
 # @receiver(post_save, sender=BindingCourse)
 # def create_or_update_course(sender, instance, created=False, **kwargs):
@@ -74,6 +74,33 @@ def create_or_update_course(sender, instance, created=False, **kwargs):
                 binding_course=instance  # assuming Course model has a ForeignKey to BindingCourse
             )
             course.videos.set(instance.videos.all())  # Set the many-to-many relationship
+        
+@receiver(post_save, sender=BindingCourse)
+def create_notification(sender, instance, created, **kwargs):
+    if instance.approved :
+        message = f"Your course {instance.title} has been approved."  # Assuming 'title' is a field on BindingCourse
+        notification = Notification.objects.create(
+            user=instance.created_by.user,
+            message=message,
+            accepted=True
+         
+        )
+        notification.save()
+
+
+
+@receiver(post_delete, sender=BindingCourse)
+def create_notificationRejected(sender, instance, **kwargs):
+    if instance.approved==False :
+        message = f"Your course {instance.title} has been rejected."  # Assuming 'title' is a field on BindingCourse
+        notification = Notification.objects.create(
+            user=instance.created_by.user,
+            message=message,
+            accepted=False
+         
+        )
+        notification.save()
+
 
 @receiver(post_save, sender=BindingBook)
 def create_or_update_book(sender, instance, created=False, **kwargs):
@@ -154,6 +181,26 @@ def create_meeting_on_deletion(sender, instance, **kwargs):
             # Do not link binding_meeting as the original is deleted
         )
         new_meeting.save()
+
+@receiver(post_delete, sender=BindingMeeting)
+def create_meeting_on_deletion(sender, instance, **kwargs):
+    # Since the original BindingMeeting is deleted, you cannot link the new Meeting to it.
+    # You can still create a new Meeting possibly related to another BindingMeeting or without any direct link.
+    
+    # Create a new Meeting object with default or specified attributes
+    if instance.approved==False:
+        new_meeting = Meeting.objects.create(
+            date_time=instance.date_time if hasattr(instance, 'date_time') else None,
+            student=instance.student if hasattr(instance, 'student') else None,
+            employee=instance.employee if hasattr(instance, 'employee') else None,
+            message=instance.message,
+            accepted=False,
+            
+            # Do not link binding_meeting as the original is deleted
+        )
+        new_meeting.save()
+
+        
     
     # Optionally, if your model allows nullable or default BindingMeeting, you might set it here
     # new_meeting.binding_meeting = some_default_binding_meeting

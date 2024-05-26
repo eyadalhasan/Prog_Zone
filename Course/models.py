@@ -34,7 +34,7 @@ class Course(models.Model):
 class StudentCourseRank(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='course_ranks')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='student_ranks')
-    rank = models.IntegerField(
+    rank = models.FloatField(
         validators=[
             MinValueValidator(0),  # Ensuring the rank is at least 0
             MaxValueValidator(5)   # Ensuring the rank does not exceed 5

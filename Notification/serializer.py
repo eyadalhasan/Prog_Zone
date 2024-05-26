@@ -6,7 +6,7 @@ from .models import Notification
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ['id', 'user', 'message', 'created_at', 'is_read']
+        fields = ['id', 'user', 'message', 'created_at', 'is_read',"accepted"]
         read_only_fields = ['id', 'user', 'created_at']  # These fields should not be modified directly by the API
 
     def create(self, validated_data):

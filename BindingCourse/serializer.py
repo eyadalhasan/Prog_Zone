@@ -11,7 +11,7 @@ class BindingCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = BindingCourse
         fields = '__all__'
-        depth=1
+        depth=2
 
 
 from rest_framework import serializers
@@ -28,3 +28,9 @@ class BindingPostCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = BindingCourse
         fields = ['title', 'description', 'category', 'price', 'imageURL', 'demo', 'videos']
+
+class BindingPatchCourseSerializer(serializers.ModelSerializer):
+    # videos = VideoSerializer()
+    class Meta:
+        model = BindingCourse
+        fields = ["approved","is_readed"]

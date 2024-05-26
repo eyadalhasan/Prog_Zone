@@ -13,6 +13,7 @@ from Employee.models import Employee
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status
+from Video.models import Video
 class CourseViewSet(viewsets.ModelViewSet):
     permission_classes=[]
     authentication_classes=[TokenAuthentication]
@@ -35,7 +36,36 @@ class CourseViewSet(viewsets.ModelViewSet):
     #     else:
     #         permission_classes = [IsAuthenticated]
     #     return [permission() for permission in permission_classes]
-    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        
+        # Handle the custom saving logic
+        user = self.request.user
+        try:
+            employee = Employee.objects.get(user=user)
+            # Ensure the updated_by field is handled if necessary
+            course = serializer.save(updated_by=employee)
+            
+            # Handle adding or updating videos
+            videos_files = request.FILES.getlist('file', [])
+            titles = request.data.getlist('titles', [])
+            for video_file, title in zip(videos_files, titles):
+                video_data = {'file': video_file, 'title': title}
+                if video_data.get('id'):
+                    video = Video.objects.get(id=video_data['id'], course=course)
+                    video.file = video_data.get('file', video.file)
+                    video.title = video_data.get('title', video.title)
+                    video.save()
+                else:
+                    Video.objects.create(course=course, **video_data)
+
+        except Employee.DoesNotExist:
+            return Response({"error": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.data)
+
+
     
 
     def perform_create(self, serializer):
@@ -115,11 +145,38 @@ from .models import StudentCourseRank
 from .serializer import StudentCourseRankSerializer
 from Student.models import Student
 
+# class StudentCourseRankViewSet(viewsets.ModelViewSet):
+#     queryset = StudentCourseRank.objects.all()
+#     serializer_class = StudentCourseRankSerializer
+#     permission_classes = [IsAuthenticated]  # Ensure only authenticated users can use this viewset
+#     authentication_classes=[TokenAuthentication]
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid():
+#             student = get_object_or_404(Student, user=request.user)
+#             serializer.save(student=student)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+#     def list(self, request, *args, **kwargs):
+#         # Standard implementation of list action, which might include filtering logic
+#         queryset = self.filter_queryset(self.get_queryset())
+#         serializer = self.get_serializer(queryset, many=True, context={'request': request})
+#         return Response(serializer.data)
+
+
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.db.models import Count
+
 class StudentCourseRankViewSet(viewsets.ModelViewSet):
     queryset = StudentCourseRank.objects.all()
     serializer_class = StudentCourseRankSerializer
     permission_classes = [IsAuthenticated]  # Ensure only authenticated users can use this viewset
-    authentication_classes=[TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -127,12 +184,19 @@ class StudentCourseRankViewSet(viewsets.ModelViewSet):
             serializer.save(student=student)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(serializer.errors, status=status.HTTP_400_BAD_APIRequest)
 
     def list(self, request, *args, **kwargs):
-        # Standard implementation of list action, which might include filtering logic
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='student-count')
+    def get_student_count(self, request, pk=None):
+        """
+        Returns the number of students who have ranked the specified course.
+        """
+        student_count = StudentCourseRank.objects.filter(course=pk).values('student').distinct().count()
+        return Response({"student_count": student_count}, status=status.HTTP_200_OK)
+
 

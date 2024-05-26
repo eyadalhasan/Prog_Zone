@@ -5,6 +5,7 @@ from .serializer import EmployeeSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from Employee.models import Employee
+from .serializer import EmployeeSerializerPost
 class EmployeeRegestrationView(APIView):
     permission_classes = ()
     authentication_classes = ()
@@ -12,7 +13,7 @@ class EmployeeRegestrationView(APIView):
     def post(self, request, format=None):
         data=request.data
         print(data)
-        serializer=EmployeeSerializer(data=data)
+        serializer=EmployeeSerializerPost(data=data)
         if  serializer.is_valid():
             print(serializer.errors)
             serializer.save()
@@ -50,4 +51,56 @@ class EmployeeDataView(APIView):
 
 
 
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from .models import Employee
+from django.contrib.auth.models import User
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from Student.models import Student
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def delete_user(request, instructor_id):
+    try:
+        # Get the instructor by ID
+        instructor = Employee.objects.get(id=instructor_id)
     
+        # Get the user associated with the instructor
+        user = instructor.user
+        
+        # Delete the user
+        user.delete()
+        
+        return Response({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+    except Employee.DoesNotExist:
+        return Response({'error': 'Instructor not found'}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def delete_student(request, student_id):
+    try:
+        # Get the instructor by ID
+        student = Student.objects.get(id=student_id)
+    
+        # Get the user associated with the instructor
+        user = student.user
+        
+        # Delete the user
+        user.delete()
+        
+        return Response({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+    except Employee.DoesNotExist:
+        return Response({'error': 'student not found'}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

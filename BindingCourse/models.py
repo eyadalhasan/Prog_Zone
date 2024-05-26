@@ -22,6 +22,7 @@ class BindingCourse(models.Model):
 
     demo= models.FileField(upload_to=video_upload_location, null=True, blank=True)
     approved = models.BooleanField(default=False)
+    is_readed=models.BooleanField(default=False)
     def __str__(self):
         return f"Binding Course: {self.title}"
 

@@ -17,3 +17,5 @@ class VideoView(models.Model):
 
     def __str__(self):
         return f'{self.user.username} viewed {self.video.title}'
+    class Meta:
+        unique_together = ('video', 'user')

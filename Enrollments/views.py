@@ -121,7 +121,7 @@ from .models import Enrollments
 from .serializer import EnrollmentsSerializer, EnrollmentsGETSerializer, EnrollmentsPOSTSerializer
 from Permissions.permission import IsStudent, IsRelatedUserOrReadOnly
 from rest_framework.views import APIView
-
+from Student.serializer import StudentSerializer
 
 class EnrollmentsViewset(ModelViewSet):
     authentication_classes = [TokenAuthentication]
@@ -174,7 +174,16 @@ class EnrollmentsViewset(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     
-
+    @action(detail=True, methods=['get'], url_path='students-in-course')
+    def list_students_in_course(self, request, pk=None):
+        """
+        This action returns all students enrolled in a specific course.
+        """
+        course = get_object_or_404(Course, pk=pk)
+        enrollments = Enrollments.objects.filter(course=course)
+        students = [enrollment.student for enrollment in enrollments]
+        serializer = StudentSerializer(students, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
@@ -196,14 +205,13 @@ class EnrollmentsView(APIView):
         user = self.request.user
         student = get_object_or_404(Student, user=user)
         course_id = request.data.get('course')
-
         # Check if the enrollment already exists for the student and course
         existing_enrollment = Enrollments.objects.filter(student=student, course_id=course_id).exists()
         if existing_enrollment:
             return Response({"error": "This enrollment already exists."}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             enrollment = Enrollments.objects.create(student=student, course_id=course_id)
             return Response({"message": "Enrollment created successfully."}, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({"error": "Failed to create enrollment due to integrity constraint violation."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
