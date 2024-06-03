@@ -12,13 +12,10 @@ class Meeting(models.Model):
     message = models.TextField()
     accepted=models.BooleanField(default=False)
     is_readed=models.BooleanField(default=False)
-    created_on = models.DateTimeField(auto_now_add=True,blank=True,null=True)  # Automatically set the field to now when the object is first created.
-   
-    
+    created_on = models.DateTimeField(auto_now_add=True,blank=True,null=True)
     class Meta:
-        ordering = ['-created_on']  # Global default ordering
-
+        ordering = ['-created_on'] 
 
     def __str__(self):
-        return f"Meeting on {self.date_time} with {self.student} and {self.employee}"
+        return f"Meeting will be on {self.date_time} with {self.student} and {self.employee}"
 
